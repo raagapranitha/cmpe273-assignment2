@@ -4,10 +4,10 @@ import sqlite3
 import copy
 from collections import OrderedDict
 from database import print_rows
+import itertools
 
 app = Flask(__name__)
 
-# conn = sql.connect('database.db')
 DATABASE = 'database.db'
 conn = sqlite3.connect(DATABASE)
 conn.row_factory = sqlite3.Row
@@ -27,18 +27,8 @@ c.execute("""CREATE TABLE  IF NOT EXISTS scantron_student_answers(
 					`5` text
 					)""")
 
-c.execute("""CREATE TABLE IF NOT EXISTS scantron_test(
-					scantron_id integer NOT NULL PRIMARY KEY,
-					name text,
-					subject text,
-					`1` text,
-					`2` text,
-					`3` text,
-					`4` text,
-					`5` text
-					)""")
-
 conn.commit()
+student_answers = ['scantron_id','scantron_url','name','subject']
 print('Table scantron_student_answers created successfully')
 
 
@@ -53,33 +43,17 @@ c.execute("""CREATE TABLE  IF NOT EXISTS scantron_keys(
 					)""")
 conn.commit()
 print('Table scantron_keys created successfully')
-# query = "INSERT INTO scantron_student_answers VALUES (1,'https://sdfjo','test','cmpe273',40,'a','b','c','d','e')"
-# query2 = "INSERT INTO scantron_keys VALUES (1,'cmpe273','a','b','c','d','e')"
-# cursor = conn.cursor()
-# # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-# # print(cursor.fetchall())
-# cursor.execute(query)
-# cursor.execute(query2)
-# cursor.execute("SELECT * FROM scantron_student_answers WHERE `subject` = 'cmpe273'")
-# result = cursor.fetchall()
-# for row in result:
-# 	print(row[1])
-# cursor.execute("SELECT * FROM scantron_keys WHERE `subject` = 'cmpe273'")
-# result = cursor.fetchall()
-# for row in result:
-# 	print(row[1])
 
 stud ={'scantron_url':'https://sfjie',
 		'name':'test','subject':'cmpe273','score':40,'1':'A','2':'B',
 		'3':'C','4':'E','5':'C'}
-scantron_dict = {'name':'test_student','subject':'cmpe273','1':'A',"2":'B','3':'C','4':'D','5':'E'}
 
 @app.route('/api/test/testing',methods=["GET"])
 def getStudents():
 	stud_dict ={}
 	keys_dict ={}
-	insert_dict_into_table('scantron_test',scantron_dict)
-	stud_dict = print_rows('scantron_student_answers')
+	insert_dict_into_table('scantron_student_answers',stud)
+	stud_dict = getDict('scantron_student_answers')
 	# keys_dict = getDict('scantron_keys')
 	# new_dict ={}
 	# for i in range(1,51):
@@ -140,13 +114,10 @@ def getDict(table_name):
 	with sqlite3.connect(DATABASE) as conn:
 		c= conn.cursor()
 		c.execute(query)
-		r = c.fetchall()
-		print("r = c.fectchone()"+str(r))
-		column_names = (r.keys())
-		print(column_names)
-		for i in column_names:
-			new_dict[str(i)] = r[str(i)]
-	return new_dict
+		desc = c.description
+		column_names = [col[0] for col in desc]
+		data = [dict(zip(column_names, row)) for row in c.fetchall()]
+	return data
 
 def get_data_from_input(input_data,s):
 	new_dict=json.loads(input_data)
