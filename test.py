@@ -31,19 +31,49 @@
 # img.putdata(data)
 # img.save('bnary_img.png','PNG')
 # img.show()        
-import copy
+from PIL import Image
+import pytesseract
+import sys
+from pdf2image import convert_from_path
+import os
+from pytesseract import Output,image_to_string
 
-dict_from_post = {}
-dict_to_database= {}
-test_id = 1 
-dict_to_database['answer'] = 'A'
-dict_from_post['test_id'] = test_id
-dict_from_post['subject'] = 'cmpe'
-temp = dict(dict_to_database)
-temp.update(dict_from_post)
-dict_to_database = temp
-dict_from_post['name'] = 'sara'
+# PDF_file = "output.pdf"
+# pages = convert_from_path(PDF_file, 500) 
+# image_counter = 1
+  
+# for page in pages: 
+#     filename = "page_"+str(image_counter)+".jpg"
+#     page.save(filename, 'JPEG') 
+#     image_counter = image_counter + 1
+  
+# filelimit = image_counter-1
+# outfile = "out_text2.txt"
+
+f = open("NameFile.txt", "w") 
+colorImage  = Image.open("scantron_marked.jpg")
+rotated     = colorImage.rotate(45)
+transposed  = colorImage.transpose(Image.ROTATE_90)
+transposed = transposed.save("rotatedImage.jpg")
+
+img = Image.open("rotatedImage.jpg")
+temp = img.crop((614, 41, 1088, 92))
+student = temp.save("student.jpg",quality=95)
+temp2 = img.crop((607, 95, 905, 150))
+subject = temp2.save("subject.jpg",quality=95)
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'    
+d = pytesseract.image_to_data("student.jpg",output_type=Output.DICT) 
+text=d['text']
+for t in d['text']:
+	if t =="":
+		text.remove(t)
+print(text)
+
+d = pytesseract.image_to_data("subject.jpg",output_type=Output.DICT) 
+text=d['text']
+print(text)
 
 
-print(dict_to_database)
-print(dict_from_post)
+# f.write(d) 
+f.close() 
