@@ -60,7 +60,7 @@ def create_table_keys():
 		db.session.add(Test(subject = subject, answer_keys = answer_keys,submissions=submissions))
 		db.session.commit()
 		tests = Test.query.filter_by(subject=subject).first()
-		return jsonify(tests.serialize)
+		return jsonify(tests.serialize),201
 	else:
 		return jsonify("Test not valid")
 
@@ -83,7 +83,7 @@ def create_submission(test_id):
 		score=score,scantron_url=scantron_url,result = result))
 	db.session.commit()
 	submissions = Submission.query.filter_by(subject=input_data['subject']).first()
-	return jsonify(submissions.serialize)
+	return jsonify(submissions.serialize),201
 	
 
 @app.route('/files/<string:filename>', methods=['GET'])
